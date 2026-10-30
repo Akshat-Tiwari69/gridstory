@@ -4,6 +4,8 @@
 
 **Live demo:** https://akshat-tiwari69.github.io/pitwall/ (a static snapshot of four cached sessions, fastest-lap telemetry only).
 
+**Case study:** [tiwaribabu.in/projects/pitwall](https://tiwaribabu.in/projects/pitwall)
+
 > Unofficial fan project. Not affiliated with Formula 1, the FIA or any team. F1 and Formula 1 are trademarks of Formula One Licensing B.V.
 
 ## Repository layout
