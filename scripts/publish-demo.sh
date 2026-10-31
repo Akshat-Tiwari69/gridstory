@@ -14,8 +14,15 @@ DIST="$ROOT/apps/web/dist"
 PY="$ROOT/apps/api/.venv/Scripts/python.exe"  # Windows venv
 [ -e "$PY" ] || PY="$ROOT/apps/api/.venv/bin/python"
 
-(cd "$ROOT/apps/web" && VITE_STATIC_DATA=true GRIDSTORY_BASE="$REPO_NAME" npm run build)
-(cd "$ROOT/apps/api" && "$PY" -m scripts.export_demo "$DIST/data")
+EXPORT_DIR="$DIST/data"
+if [[ "$PY" == *.exe ]] && command -v wslpath >/dev/null; then
+  # This checkout uses Windows dependencies; keep Node and Python on the same platform.
+  (cd "$ROOT/apps/web" && cmd.exe /d /c "set VITE_STATIC_DATA=true&& set GRIDSTORY_BASE=/$REPO_NAME/&& npm run build")
+  EXPORT_DIR="$(wslpath -w "$EXPORT_DIR")"
+else
+  (cd "$ROOT/apps/web" && VITE_STATIC_DATA=true GRIDSTORY_BASE="$REPO_NAME" npm run build)
+fi
+(cd "$ROOT/apps/api" && "$PY" -m scripts.export_demo "$EXPORT_DIR")
 cp "$DIST/index.html" "$DIST/404.html"  # Pages serves 404.html for deep links; the SPA routes from there
 touch "$DIST/.nojekyll"
 
