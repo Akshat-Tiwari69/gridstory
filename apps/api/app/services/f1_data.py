@@ -30,6 +30,7 @@ from app.models.f1 import (
     TrackPoint,
     WeatherData,
 )
+from app.services import tracinginsights as ti
 
 log = logging.getLogger(__name__)
 
@@ -41,11 +42,13 @@ pd.options.mode.chained_assignment = None
 
 
 # Since ~15 Oct 2026 F1's timing archive answers 401 without an F1 TV login, so FastF1 can
-# only serve sessions already in the local cache (theOehrly/Fast-F1#978). Results still
-# load from Ergast, which is why a session can have results but no laps.
+# only serve sessions already in the local cache (theOehrly/Fast-F1#978). Pitwall then falls
+# back to the TracingInsights archive (2018 to May 2026); this is what's left after both.
+# Results still load from Jolpica, which is why a session can have results but no laps.
 NO_TIMING_DATA = (
     "No timing data for this session. F1's timing archive has required an F1 TV login since "
-    "Oct 2026, so only sessions already in Pitwall's local cache can load."
+    "Oct 2026, and this session isn't in Pitwall's cache or the TracingInsights archive "
+    "(2018 to May 2026)."
 )
 
 
@@ -230,6 +233,24 @@ class F1DataService:
         except (TypeError, ValueError):
             return False
 
+    @staticmethod
+    def _archive_key(year: int, event: str, session_type: str) -> tuple:
+        """(year, EventName, session name): how the TracingInsights archive names a session."""
+        s = _resolve(year, event, session_type)
+        return s.event.year, s.event['EventName'], s.name
+
+    def _from_archive(self, year: int, event: str, session_type: str, fetch, *args):
+        """FastF1 has no timing data (archive lockout): serve it from TracingInsights instead.
+
+        Raises DataNotLoadedError (→ the lockout message) if the archive lacks it too.
+        """
+        key = self._archive_key(year, event, session_type)
+        data = fetch(*key, *args)
+        if data is None:
+            raise DataNotLoadedError("Not in the FastF1 cache or the TracingInsights archive")
+        log.info("Served %s from the TracingInsights archive", " ".join(map(str, key)))
+        return data
+
     def get_session(self, year: int, event: str, session_type: str, load_telemetry: bool = True):
         return _get_session(year, event, session_type, load_telemetry)
 
@@ -348,7 +369,10 @@ class F1DataService:
 
     def get_laps(self, year: int, event: str, session_type: str) -> List[LapData]:
         session = _get_session(year, event, session_type, load_telemetry=False)
-        laps = session.laps
+        try:
+            laps = session.laps
+        except DataNotLoadedError:
+            return self._from_archive(year, event, session_type, ti.laps)
 
         result = []
         for _, row in laps.iterrows():
@@ -400,8 +424,16 @@ class F1DataService:
                 return _tel_cache[cache_key]
 
         session = _get_session(year, event, session_type, load_telemetry=True)
-        tel = self._pick_lap(session, driver, lap_number).get_telemetry()
-        dataset = self._tel_to_dataset(tel)
+        try:
+            lap = self._pick_lap(session, driver, lap_number)
+            dataset = self._tel_to_dataset(lap.get_telemetry())
+        except DataNotLoadedError:
+            key = self._archive_key(year, event, session_type)
+            dataset = ti.telemetry(*key, driver, lap_number)
+            if dataset is None:
+                if ti.drivers(*key) is None:
+                    raise  # archive lacks the whole session: the lockout message applies
+                raise NotFoundError(f"Driver '{driver}' has no lap {lap_number or '(timed)'}")
 
         with _tel_lock:
             _tel_cache[cache_key] = dataset
@@ -425,6 +457,16 @@ class F1DataService:
         session = _get_session(year, event, session_type, load_telemetry=True)
         driver_datasets: Dict[str, TelemetryDataset] = {}
 
+        try:
+            session.laps
+        except DataNotLoadedError:
+            key = self._archive_key(year, event, session_type)
+            if ti.drivers(*key) is None:
+                raise
+            found = {d: ti.telemetry(*key, d, lap) for d in drivers}
+            driver_datasets = {d: t for d, t in found.items() if t is not None}
+            drivers = []  # done: skip the FastF1 loop below
+
         for driver in drivers:
             try:
                 tel = self._pick_lap(session, driver, lap).get_telemetry()
@@ -445,7 +487,10 @@ class F1DataService:
 
     def get_weather(self, year: int, event: str, session_type: str) -> List[WeatherData]:
         session = _get_session(year, event, session_type, load_telemetry=False)
-        weather = session.weather_data
+        try:
+            weather = session.weather_data
+        except DataNotLoadedError:
+            return self._from_archive(year, event, session_type, ti.weather)
 
         result = []
         for _, row in weather.iterrows():
@@ -465,7 +510,10 @@ class F1DataService:
         self, year: int, event: str, session_type: str
     ) -> List[RaceControlMessage]:
         session = _get_session(year, event, session_type, load_telemetry=False)
-        msgs = session.race_control_messages
+        try:
+            msgs = session.race_control_messages
+        except DataNotLoadedError:
+            return self._from_archive(year, event, session_type, ti.race_control, session.date)
         # Message Time is UTC wall-clock; t0_date needs telemetry, so measure from the
         # scheduled session start instead (negative = before the session).
         start = session.date
@@ -519,12 +567,21 @@ class F1DataService:
                 gap=gaps[idx] if idx < len(gaps) else "N/A",
             ))
 
+        if any(d.driver.team_color == '#888888' for d in drivers):
+            colors = ti.team_colors(*self._archive_key(year, event, session_type))
+            for d in drivers:
+                if d.driver.team_color == '#888888' and d.driver.abbreviation in colors:
+                    d.driver.team_color = colors[d.driver.abbreviation]
+
         return SessionResults(drivers=drivers)
 
     def get_circuit_info(self, year: int, event: str, session_type: str) -> CircuitInfo:
         # Telemetry needed: FastF1 places corner distances on the fastest lap's position data.
         session = _get_session(year, event, session_type, load_telemetry=True)
-        info = session.get_circuit_info()
+        try:
+            info = session.get_circuit_info()
+        except DataNotLoadedError:
+            return self._from_archive(year, event, session_type, ti.circuit)
 
         corners = []
         for _, row in info.corners.iterrows():
@@ -547,7 +604,16 @@ class F1DataService:
             fastest_lap = session.laps.pick_fastest()
             tel = fastest_lap.get_telemetry()
         except DataNotLoadedError:
-            raise  # no timing data at all: let app.main explain the archive lockout
+            laps = self._from_archive(year, event, session_type, ti.laps)
+            timed = [lap for lap in laps if lap.lap_time]
+            best = min(timed, key=lambda lap: lap.lap_time, default=None)
+            dataset = best and ti.telemetry(
+                *self._archive_key(year, event, session_type), best.driver, best.lap_number
+            )
+            if not dataset:
+                return []
+            points = _rdp(list(zip(dataset.x, dataset.y)), epsilon=2.0)
+            return [TrackPoint(x=x, y=y) for x, y in points]
         except Exception as e:
             log.warning("No track outline for %s %s %s: %s", year, event, session_type, e)
             return []

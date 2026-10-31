@@ -125,3 +125,53 @@ def test_slow_session_does_not_block_other_sessions(monkeypatch):
     start = time.perf_counter()
     f1_data._get_session(1999, "fast", "R")
     assert time.perf_counter() - start < 0.5  # was ~1.5 s with one global load lock
+
+
+def test_archive_fallback_serves_a_race_fastf1_cannot():
+    """2025 China isn't in the FastF1 cache, so this exercises the TracingInsights fallback."""
+    base = "/api/v1/sessions/2025/China/R"
+    laps = client.get(base + "/laps")
+    assert laps.status_code == 200 and len(laps.json()) > 1000
+
+    tel = client.get(base + "/telemetry/compare?drivers=PIA&lap=0").json()["drivers"]["PIA"]
+    assert 5300 < tel["distance"][-1] < 5500  # Shanghai is 5.45 km
+    assert len(tel["x"]) == len(tel["distance"])
+
+    colours = {d["driver"]["team_color"] for d in client.get(base + "/results").json()["drivers"]}
+    assert "#888888" not in colours  # Jolpica has none; the archive fills them in
+
+
+@pytest.mark.parametrize("endpoint, source", [("laps", "laps"), ("weather", "weather")])
+@pytest.mark.parametrize("archived, status", [(None, 404), ([], 200)])
+def test_archive_fallback_when_fastf1_has_no_data(monkeypatch, endpoint, source, archived, status):
+    """Force the fallback, including the difference between missing and empty data."""
+    from fastf1.exceptions import DataNotLoadedError
+
+    class UnloadedSession:
+        @property
+        def laps(self):
+            raise DataNotLoadedError("not loaded")
+
+        @property
+        def weather_data(self):
+            raise DataNotLoadedError("not loaded")
+
+    monkeypatch.setattr(f1_data, "_get_session", lambda *a, **kw: UnloadedSession())
+    monkeypatch.setattr(
+        f1_data.F1DataService, "_archive_key",
+        staticmethod(lambda *a: (2025, "Chinese Grand Prix", "Race")),
+    )
+    calls = []
+
+    def fetch(*key):
+        calls.append(key)
+        return archived
+
+    monkeypatch.setattr(f1_data.ti, source, fetch)
+    response = client.get(f"/api/v1/sessions/2025/China/R/{endpoint}")
+    assert response.status_code == status
+    assert calls == [(2025, "Chinese Grand Prix", "Race")]
+    if archived is None:
+        assert "TracingInsights archive" in response.json()["detail"]
+    else:
+        assert response.json() == []
