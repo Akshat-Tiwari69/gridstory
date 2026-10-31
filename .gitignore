@@ -49,3 +49,6 @@ docker-compose.override.yml
 *.tmp
 .env.local
 .env.production
+
+# ===== Brainstorming companion (local mockups) =====
+.superpowers/
