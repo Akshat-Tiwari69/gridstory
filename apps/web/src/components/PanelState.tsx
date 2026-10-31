@@ -19,7 +19,7 @@ export function Skeleton({ rows = 6 }: { rows?: number }) {
       ))}
       {slow && (
         <p className="panel-state-hint">
-          Still loading. The first time a session opens, Pitwall reads and processes all its timing data, which can take a little while.
+          Still loading. The first time a session opens, GridStory reads and processes all its timing data, which can take a little while.
         </p>
       )}
     </div>

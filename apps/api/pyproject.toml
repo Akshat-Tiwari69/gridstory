@@ -1,5 +1,5 @@
 [project]
-name = "pitwall-api"
+name = "gridstory-api"
 version = "0.1.0"
 description = "AI-powered Formula One race engineering intelligence platform - API"
 requires-python = ">=3.11"

@@ -1,10 +1,10 @@
-# Pitwall
+# GridStory
 
-**Race engineering intelligence for Formula 1.** Pitwall turns raw FastF1 telemetry into interactive race analysis, and explains where the time was won or lost instead of only charting it.
+**Race engineering intelligence for Formula 1.** GridStory turns raw FastF1 telemetry into interactive race analysis, and explains where the time was won or lost instead of only charting it.
 
-**Live demo:** https://akshat-tiwari69.github.io/pitwall/ (a static snapshot of four cached sessions, fastest-lap telemetry only).
+**Live demo:** https://akshat-tiwari69.github.io/gridstory/ (a static snapshot of four cached sessions, fastest-lap telemetry only).
 
-**Case study:** [tiwaribabu.in/projects/pitwall](https://tiwaribabu.in/projects/pitwall)
+**Portfolio:** [tiwaribabu.in/projects/](https://tiwaribabu.in/projects/)
 
 > Unofficial fan project. Not affiliated with Formula 1, the FIA or any team. F1 and Formula 1 are trademarks of Formula One Licensing B.V.
 
@@ -63,7 +63,7 @@ Opens on http://localhost:5173 and talks to the API on port 8000.
 - **[TracingInsights Archive](https://github.com/TracingInsights-Archive)** (Apache-2.0, by [TracingInsights](https://tracinginsights.com/)): the fallback for everything FastF1 can't load. It covers lap times, per-lap telemetry, weather, race control, corners and team colours from 2018 to May 2026.
 - **[Jolpica-F1](https://github.com/jolpica/jolpica-f1)** (Apache-2.0, via FastF1): session results.
 
-More sources and references, and how Pitwall uses them: [docs/RESOURCES.md](docs/RESOURCES.md).
+More sources and references, and how GridStory uses them: [docs/RESOURCES.md](docs/RESOURCES.md).
 
 ## Warming the cache
 

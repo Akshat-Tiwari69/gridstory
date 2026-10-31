@@ -1,4 +1,4 @@
-# Pitwall — Project Vision Document
+# GridStory — Project Vision Document
 
 > *An AI-powered Formula One race engineering intelligence platform that transforms raw telemetry into cinematic, interactive, and deeply intelligent race analysis.*
 
@@ -6,7 +6,7 @@
 
 ## 1. Project Overview
 
-Pitwall is a full-stack AI-powered Formula One race intelligence platform built on top of the **FastF1** telemetry library. It combines real-time-style telemetry replay, deep driver behavioral analysis, race strategy intelligence, and a conversational AI race engineer — all unified inside a single engineering-grade web interface.
+GridStory is a full-stack AI-powered Formula One race intelligence platform built on top of the **FastF1** telemetry library. It combines real-time-style telemetry replay, deep driver behavioral analysis, race strategy intelligence, and a conversational AI race engineer — all unified inside a single engineering-grade web interface.
 
 The platform should feel like **real race engineering software used inside an actual Formula One garage** — not a student dashboard, not a blog with charts, and not a collection of Jupyter notebook outputs. Every pixel should serve a purpose. Every visualization should explain something. Every interaction should feel like sitting on the pit wall.
 
@@ -341,7 +341,7 @@ Lap 35: 🏁 Restart — Verstappen holds lead, Leclerc attacks Norris
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  Pitwall                         [Session Selector]  [🔧]  │
+│  GridStory                         [Session Selector]  [🔧]  │
 ├──────────┬──────────────────────────────────────────────────┤
 │          │                                                  │
 │  Track   │   Telemetry / Analysis / Replay Panel            │
@@ -407,7 +407,7 @@ Lap 35: 🏁 Restart — Verstappen holds lead, Leclerc attacks Norris
 
 ### Gap Analysis — What Exists vs What We Build
 
-| Existing Landscape | Pitwall |
+| Existing Landscape | GridStory |
 |---|---|
 | Static Matplotlib charts in notebooks | Interactive, animated, engineering-grade web visualizations |
 | Results/standings websites (Ergast-based) | Deep telemetry analysis with behavioral intelligence |
@@ -477,4 +477,4 @@ The platform succeeds when:
 
 > **Final Vision Statement:**
 >
-> Pitwall is not a dashboard. It is not a data viewer. It is a **race engineering intelligence platform** — a system that watches Formula One the way an engineer watches it, and then explains what it sees in a way that makes anyone feel like they're sitting on the pit wall.
+> GridStory is not a dashboard. It is not a data viewer. It is a **race engineering intelligence platform** — a system that watches Formula One the way an engineer watches it, and then explains what it sees in a way that makes anyone feel like they're sitting on the pit wall.

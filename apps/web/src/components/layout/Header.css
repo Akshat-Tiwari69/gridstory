@@ -18,18 +18,9 @@
 
 .logo-mark {
   height: 24px;
-  width: 24px;
+  width: auto;
   display: block;
   flex-shrink: 0;
-}
-
-.logo-text {
-  font-size: var(--text-base);
-  font-weight: 800;
-  font-style: italic;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--text-primary);
 }
 
 .demo-chip {

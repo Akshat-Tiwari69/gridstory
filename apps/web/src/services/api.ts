@@ -46,7 +46,7 @@ api.interceptors.response.use(
   (error) => {
     const detail = error.response?.data?.detail;
     if (IS_DEMO && error.response?.status === 404) {
-      error.message = 'Not included in the online demo. Run Pitwall locally for every session.';
+      error.message = 'Not included in the online demo. Run GridStory locally for every session.';
     } else if (typeof detail === 'string') error.message = detail;
     else if (!error.response) error.message = `Can't reach the API at ${API_ORIGIN}. Is it running?`;
     return Promise.reject(error);
@@ -91,7 +91,7 @@ export const f1Service = {
   getCompareTelemetry: async (year: number, event: string, sessionType: string, drivers: string[], lap: number): Promise<MultiDriverTelemetry> => {
     if (IS_DEMO) {
       // ponytail: demo ships fastest laps only (~80 kB per driver); every lap would be ~60 MB a race.
-      if (lap !== 0) throw new Error("The online demo only has each driver's fastest lap. Run Pitwall locally for every lap.");
+      if (lap !== 0) throw new Error("The online demo only has each driver's fastest lap. Run GridStory locally for every lap.");
       const base = sessionPath(year, event, sessionType);
       const found = await Promise.all(
         drivers.map((d) => get<TelemetryDataset>(`${base}/telemetry/${d}`).then((t) => [d, t] as const, () => null))

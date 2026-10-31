@@ -1,4 +1,4 @@
-"""FastAPI routes for Pitwall.
+"""FastAPI routes for GridStory.
 
 Errors are mapped centrally in app.main: NotFoundError → 404, anything unexpected → 500.
 """

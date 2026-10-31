@@ -42,12 +42,12 @@ pd.options.mode.chained_assignment = None
 
 
 # Since ~15 Oct 2026 F1's timing archive answers 401 without an F1 TV login, so FastF1 can
-# only serve sessions already in the local cache (theOehrly/Fast-F1#978). Pitwall then falls
+# only serve sessions already in the local cache (theOehrly/Fast-F1#978). GridStory then falls
 # back to the TracingInsights archive (2018 to May 2026); this is what's left after both.
 # Results still load from Jolpica, which is why a session can have results but no laps.
 NO_TIMING_DATA = (
     "No timing data for this session. F1's timing archive has required an F1 TV login since "
-    "Oct 2026, and this session isn't in Pitwall's cache or the TracingInsights archive "
+    "Oct 2026, and this session isn't in GridStory's cache or the TracingInsights archive "
     "(2018 to May 2026)."
 )
 

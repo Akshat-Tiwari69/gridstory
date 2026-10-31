@@ -1,1 +1,1 @@
-"""Pitwall — Backend Application"""
+"""GridStory — Backend Application"""

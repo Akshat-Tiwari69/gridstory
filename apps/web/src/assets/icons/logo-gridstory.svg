@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="184" height="32" viewBox="0 0 184 32" fill="none" role="img" aria-labelledby="gridstory-title">
+  <title id="gridstory-title">GridStory</title>
+  <desc>A circuit-shaped G beside the GridStory wordmark.</desc>
+  <!-- Design note: retain the red racing accent and pale UI text. The angular G follows a circuit into its timing-bar terminal. Hand-drawn wordmark paths have no font dependency. Use at 32px high with 8px clear space; use the favicon below 24px. -->
+  <rect width="32" height="32" rx="6" fill="#e10600"/>
+  <path d="M23 9H13L8 14V23H19L24 18V16H17" stroke="#eaeaf0" stroke-width="4" stroke-linejoin="round"/>
+  <g stroke="#eaeaf0" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M56 10C54 8 51 8 49 8C44 8 42 11 42 16S44 24 49 24C52 24 54 23 56 22V17H50"/>
+    <path d="M63 24V13M63 17C64 14 66 13 69 13"/>
+    <path d="M75 14V24"/>
+    <path d="M92 8V24M92 18C92 11 81 11 81 18S92 26 92 19"/>
+    <path d="M111 10C109 8 107 8 105 8C99 8 98 14 104 16L107 17C114 19 111 24 106 24C103 24 101 23 99 22"/>
+    <path d="M119 9V21Q119 24 123 24M116 14H124"/>
+    <path d="M140 18.5C140 11 129 11 129 18.5S140 26 140 18.5Z"/>
+    <path d="M147 24V13M147 17C148 14 150 13 153 13"/>
+    <path d="M158 14L163 24M169 14L163 27Q162 30 159 29"/>
+  </g>
+  <circle cx="75" cy="9" r="1.4" fill="#eaeaf0"/>
+</svg>

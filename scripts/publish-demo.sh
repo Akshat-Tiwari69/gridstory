@@ -14,7 +14,7 @@ DIST="$ROOT/apps/web/dist"
 PY="$ROOT/apps/api/.venv/Scripts/python.exe"  # Windows venv
 [ -e "$PY" ] || PY="$ROOT/apps/api/.venv/bin/python"
 
-(cd "$ROOT/apps/web" && VITE_STATIC_DATA=true PITWALL_BASE="$REPO_NAME" npm run build)
+(cd "$ROOT/apps/web" && VITE_STATIC_DATA=true GRIDSTORY_BASE="$REPO_NAME" npm run build)
 (cd "$ROOT/apps/api" && "$PY" -m scripts.export_demo "$DIST/data")
 cp "$DIST/index.html" "$DIST/404.html"  # Pages serves 404.html for deep links; the SPA routes from there
 touch "$DIST/.nojekyll"
@@ -23,7 +23,9 @@ cd "$DIST"
 rm -rf .git
 git init -q -b gh-pages
 git add -A
-git commit -q -m "Deploy online demo from $(git -C "$ROOT" rev-parse --short HEAD)"
+git commit -q \
+  -m "Deploy online demo from $(git -C "$ROOT" rev-parse --short HEAD)" \
+  -m "Co-Authored-By: Paperclip <noreply@paperclip.ing>"
 git push -q -f "$REPO_URL" gh-pages
 rm -rf .git
 

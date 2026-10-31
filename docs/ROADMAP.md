@@ -1,4 +1,4 @@
-# Pitwall — Roadmap
+# GridStory — Roadmap
 
 > Last updated: 2026-10-16 · Status legend: ✅ done · 🟡 partial · ⬜ not started
 
@@ -26,7 +26,6 @@ Data sources, references and inspiration (with licences) live in **[RESOURCES.md
 |---|---|
 | **Now** | Phase 1 is complete. Next: Phase 2, lap comparison, once the data question below is settled |
 | **Data** | F1's timing archive has needed an F1 TV login since ~15 Oct 2026 ([Fast-F1#978](https://github.com/theOehrly/Fast-F1/issues/978)). ✅ **Workaround in place:** when FastF1 has nothing, the API falls back to the [TracingInsights archive](https://github.com/TracingInsights-Archive), so **2018 to May 2026** works (checked: 2025 China, 2026 Japan). ⏸ Still missing: 2026 races after May. **Plan B for those:** [OpenF1](https://openf1.org) (has current 2026 telemetry, verified 2026-10-17), if FastF1 is still locked out when Phase 2 starts. |
-| **Name** | ⚠ "Pitwall" clashes with three live F1 products ([pitwall.app](https://pitwall.app/), [f1pitwall.fun](https://f1pitwall.fun/), [f1pitwall.dev](https://f1pitwall.dev/)), one of them a replay and telemetry dashboard. Rename before v0.1 |
 | **Next** | Phase 2: lap comparison with auto-generated findings → **v0.1 public demo** |
 | **Then** | Phase 3: race story (incl. team radio) → Phase 4: AI race engineer → **v0.2** → Phase 5: 3D race replay, F1 Manager-style → **v1.0** |
 | **Later** | Driver profiles & season view, live timing, strategy simulator |
@@ -175,7 +174,7 @@ No database, Redis or WebSocket until a feature actually needs one. Historical d
 
 ### 3.6 Team radio — S ⬜
 - Each driver's radio clips (listed by [OpenF1](https://openf1.org) `team_radio`, timestamped), placed on the lap they happened and playable in the driver dashboard and on the race timeline
-- Audio plays straight from F1's servers rather than being copied into Pitwall. Checked 2026-10-17: the clips still download (HTTP 200) despite the timing-archive lockout, for 2024 and 2026 races
+- Audio plays straight from F1's servers rather than being copied into GridStory. Checked 2026-10-17: the clips still download (HTTP 200) despite the timing-archive lockout, for 2024 and 2026 races
 - Real radio fills the driver-dashboard slot the fake "AI Engineer" radio left in 1.2
 - Stretch: transcribe the clips (speech-to-text) so radio is searchable and readable, an idea from [undercut-f1](https://github.com/JustAman62/undercut-f1); the transcripts also become context for the AI engineer (Phase 4)
 
@@ -286,8 +285,8 @@ Live timing via [OpenF1](https://openf1.org) (references: [f1-dash](https://gith
 | No fuel, tyre temperature, ERS or brake temperature data | Never display them; fuel load is modelled, not measured |
 | 2026 rules replace DRS with active aero and an overtake mode | DRS-based features apply to ≤ 2025; check what the DRS channel means for 2026 sessions |
 | Cold session loads download a lot of data | Precompute or warm the demo sessions; show progress |
-| When the safety car leads the field through the pit lane, FastF1 and OpenF1 both record each pass as a pit stop, and their tyre ages for those laps disagree | Pitwall counts a stop only when tyre age resets. That fixes most drivers, but one can still be over-counted (Stroll shows 5 in 2025 Australia; really 2) |
-| **Since ~15 Oct 2026, F1's timing archive returns 401 without an F1 TV login** ([Fast-F1#978](https://github.com/theOehrly/Fast-F1/issues/978)); FastF1's mirror has no 2023–2026 data | FastF1 serves only cached sessions (2024 Bahrain Q/R, 2024 Saudi R, 2025 Australia R); everything else from 2018 to May 2026 comes from the TracingInsights fallback, and later 2026 races get results only. CI skips `livedata` tests. **Never clear `app/f1_cache`**: a backup is at `F:\Code\Backups\pitwall-f1-cache-2026-10-17` |
+| When the safety car leads the field through the pit lane, FastF1 and OpenF1 both record each pass as a pit stop, and their tyre ages for those laps disagree | GridStory counts a stop only when tyre age resets. That fixes most drivers, but one can still be over-counted (Stroll shows 5 in 2025 Australia; really 2) |
+| **Since ~15 Oct 2026, F1's timing archive returns 401 without an F1 TV login** ([Fast-F1#978](https://github.com/theOehrly/Fast-F1/issues/978)); FastF1's mirror has no 2023–2026 data | FastF1 serves only cached sessions (2024 Bahrain Q/R, 2024 Saudi R, 2025 Australia R); everything else from 2018 to May 2026 comes from the TracingInsights fallback, and later 2026 races get results only. CI skips `livedata` tests. **Never clear `app/f1_cache`**: the 2026-10-17 cache backup is under `F:\Code\Backups` |
 
 ## Engineering standards
 

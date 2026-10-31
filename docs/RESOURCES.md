@@ -1,6 +1,6 @@
 # Resources
 
-External data sources, references and inspiration for Pitwall, and how each one is (or could be) used. Mostly picked from [awesome-f1](https://github.com/subinium/awesome-f1). Licences, activity and links were checked on 2026-10-17 (BoardF1 from that list is gone; f1-dash moved to f1-dash.com).
+External data sources, references and inspiration for GridStory, and how each one is (or could be) used. Mostly picked from [awesome-f1](https://github.com/subinium/awesome-f1). Licences, activity and links were checked on 2026-10-17 (BoardF1 from that list is gone; f1-dash moved to f1-dash.com).
 
 **Rules for using anything here:**
 - Check the licence before copying code or data. "None" means all rights reserved: look and learn, don't copy.
@@ -13,7 +13,7 @@ Status legend: ✅ in use · 🎯 planned (roadmap milestone) · 💡 idea / ref
 
 ## Data sources
 
-| Resource | Licence | Status | What it gives Pitwall |
+| Resource | Licence | Status | What it gives GridStory |
 |---|---|---|---|
 | [FastF1](https://github.com/theOehrly/Fast-F1) · [docs](https://docs.fastf1.dev/) | MIT | ✅ | Primary source: timing, telemetry, weather, race control, circuit info. Locked out of F1's archive since ~15 Oct 2026 ([#978](https://github.com/theOehrly/Fast-F1/issues/978)), so only cached sessions load through it |
 | [TracingInsights Archive](https://github.com/TracingInsights-Archive) · [data hub](https://tracinginsights.com/data/) · [HuggingFace mirror](https://huggingface.co/datasets/tracinginsights/RaceData) | Apache-2.0 | ✅ | **Fallback when FastF1 has no timing data** (`apps/api/app/services/tracinginsights.py`): every lap's telemetry (incl. x/y/z, g-forces, gap to car ahead), lap times, weather, race control, corners and team colours for 2018 to May 2026. Repos per season; the 2026 one stopped updating in May. Browser-fetchable (CORS), so the online demo could load any lap directly |
@@ -34,7 +34,7 @@ Status legend: ✅ in use · 🎯 planned (roadmap milestone) · 💡 idea / ref
 |---|---|---|
 | F1 team radio (listed by OpenF1 `team_radio`) | 🎯 3.6 | MP3s on F1's servers still download despite the lockout (checked 2026-10-17). Play from F1's URL; don't copy |
 | [undercut-f1](https://github.com/JustAman62/undercut-f1) (licence: none) | 💡 3.6 / Phase 4 | Live-timing TUI that **transcribes team radio**. The idea (speech-to-text on radio clips) would make radio searchable and give the AI engineer radio as context |
-| F1 TV / [MultiViewer](https://multiviewer.app) | 💡 | Real onboard video is licensed to F1 TV (paid, DRM). Pitwall never scrapes it; at most a "Watch on F1 TV" link. The virtual onboard (5.2) is the telemetry-built alternative |
+| F1 TV / [MultiViewer](https://multiviewer.app) | 💡 | Real onboard video is licensed to F1 TV (paid, DRM). GridStory never scrapes it; at most a "Watch on F1 TV" link. The virtual onboard (5.2) is the telemetry-built alternative |
 
 ## Inspiration (look and learn; no licence means no copying)
 
@@ -43,7 +43,7 @@ Status legend: ✅ in use · 🎯 planned (roadmap milestone) · 💡 idea / ref
 | [F1 Race Replay](https://github.com/IAmTomShaw/f1-race-replay) | none | Closest to the 3D replay (Phase 5): race-state visualisation, track rendering, playback UX |
 | [F1ReplayTiming](https://github.com/adn8naiagent/F1ReplayTiming) | none | Replay synced with timing overlays, telemetry charts and the track map |
 | [Armchair Strategist](https://github.com/Casper-Guo/Armchair-Strategist) | none | Strategy visuals: pit windows, pace comparison, race narrative (Phase 3) |
-| [f1-dash](https://github.com/slowlydev/f1-dash) · [live](https://f1-dash.com) | AGPL-3.0 (copying would force Pitwall to AGPL) | Clean live-timing dashboard UI: leaderboard, tyres, gaps, mini-sectors |
+| [f1-dash](https://github.com/slowlydev/f1-dash) · [live](https://f1-dash.com) | AGPL-3.0 (copying would force GridStory to AGPL) | Clean live-timing dashboard UI: leaderboard, tyres, gaps, mini-sectors |
 | [f1-live-data](https://github.com/f1stuff/f1-live-data) | MIT | FastF1 live timing into Grafana; a reference for a future live mode |
 | [TUMFTM global_racetrajectory_optimization](https://github.com/TUMFTM/global_racetrajectory_optimization) · [race-simulation](https://github.com/TUMFTM/race-simulation) | LGPL-3.0 · LGPL-3.0 | Racing-line and race/pit-strategy simulation research, for the parking-lot "what-if" simulator |
 | [fastest-lap](https://github.com/juanmanzanero/fastest-lap) | MIT | Optimal-lap vehicle dynamics; deep background for lap analysis |
@@ -51,20 +51,19 @@ Status legend: ✅ in use · 🎯 planned (roadmap milestone) · 💡 idea / ref
 
 ## Products in the same space (know the competition)
 
-| Product | What it does | Where Pitwall should differ |
+| Product | What it does | Where GridStory should differ |
 |---|---|---|
-| [Formula Live Pulse](https://www.f1livepulse.com/) | Live timing, telemetry charts, 3D track map, AI assistant, team radio | Closest overall. Pitwall's edge: explaining *why* time was won or lost (Phase 2 findings, Phase 4 engineer) |
+| [Formula Live Pulse](https://www.f1livepulse.com/) | Live timing, telemetry charts, 3D track map, AI assistant, team radio | Closest overall. GridStory's edge: explaining *why* time was won or lost (Phase 2 findings, Phase 4 engineer) |
 | [F1 Tempo](https://www.f1-tempo.com/) | Lap time and telemetry comparison | Lap comparison with auto-generated findings |
 | [F1 Cosmos](https://f1cosmos.com/) · [F1 The Data](https://f1thedata.com/) · [F1 DataStop](https://f1datastop.com/) · [F1pace](https://f1pace.com/) · [Formula-Timer](https://formula-timer.com/) | Dashboards and analytics | Engineer-style explanations, not more charts |
-| [TracingInsights](https://tracinginsights.com/) | Interactive lap and telemetry charts (also our data fallback) | Same data, different job: Pitwall explains, they chart |
-| [pitwall.app](https://pitwall.app/) · [f1pitwall.fun](https://f1pitwall.fun/) · [f1pitwall.dev](https://f1pitwall.dev/) | An F1 database, a live replay and telemetry dashboard, and a fantasy optimiser, **all using the name "Pitwall"** | **Name clash:** see the rename decision in the roadmap |
+| [TracingInsights](https://tracinginsights.com/) | Interactive lap and telemetry charts (also our data fallback) | Same data, different job: GridStory explains, they chart |
 
 ## Learning
 
 - [Wrangling F1 Data With Python](https://f1datajunkie.github.io/wranglingf1datawithpython/index.html) and [F1 Data Junkie](http://www.f1datajunkie.com/): FastF1 workflows and analysis ideas
 - [Towards Formula 1 Analysis](https://medium.com/towards-formula-1-analysis): FastF1 tutorials (telemetry, strategy, mini-sectors)
 - [f1metrics](https://f1metrics.wordpress.com/): statistical driver ratings, useful for Phase 6 driver profiles
-- [Chain Bear](https://www.youtube.com/@chainbear), [Driver61](https://www.youtube.com/@Driver61), [Kyle Engineers](https://www.youtube.com/@KyleEngineers): clear explanations of the engineering Pitwall's findings should echo
+- [Chain Bear](https://www.youtube.com/@chainbear), [Driver61](https://www.youtube.com/@Driver61), [Kyle Engineers](https://www.youtube.com/@KyleEngineers): clear explanations of the engineering GridStory's findings should echo
 - [How to Win a Grand Prix](https://www.quercusbooks.co.uk/titles/bernie-collins/how-to-win-a-grand-prix/9781529437591/) (Bernie Collins): how a strategist actually thinks, for the AI engineer's voice
 
 ## Source list

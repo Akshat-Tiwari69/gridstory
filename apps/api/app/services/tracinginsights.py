@@ -3,7 +3,7 @@
 https://github.com/TracingInsights-Archive (Apache-2.0, by TracingInsights). One repo per
 season holding, for every session, lap times and per-lap telemetry for every driver,
 captured from F1's feed before its timing archive started requiring an F1 TV login
-(theOehrly/Fast-F1#978). Pitwall falls back to it when FastF1 has no timing data.
+(theOehrly/Fast-F1#978). GridStory falls back to it when FastF1 has no timing data.
 
 Layout: {year}/{EventName}/{session name}/
     drivers.json  corners.json  rcm.json  weather.json
