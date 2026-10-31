@@ -17,6 +17,7 @@ apps/
 docs/
   VISION.md   Product vision
   ROADMAP.md  Phased development plan
+  RESOURCES.md  Data sources, references and inspiration, with licences
   design/     Reference UI, icons and screenshots
 Makefile      Dev shortcuts (Windows)
 ```
@@ -55,6 +56,14 @@ Opens on http://localhost:5173 and talks to the API on port 8000.
 | `make web`  | Start the web app only                |
 | `make test` | Run API tests                         |
 | `make lint` | Ruff (API) + ESLint (web)             |
+
+## Data sources and credits
+
+- **[FastF1](https://github.com/theOehrly/Fast-F1)** (MIT): timing, telemetry, weather and race control from F1's live-timing archive. Since ~15 Oct 2026 that archive needs an F1 TV login ([Fast-F1#978](https://github.com/theOehrly/Fast-F1/issues/978)), so FastF1 only serves sessions already in the local cache.
+- **[TracingInsights Archive](https://github.com/TracingInsights-Archive)** (Apache-2.0, by [TracingInsights](https://tracinginsights.com/)): the fallback for everything FastF1 can't load. It covers lap times, per-lap telemetry, weather, race control, corners and team colours from 2018 to May 2026.
+- **[Jolpica-F1](https://github.com/jolpica/jolpica-f1)** (Apache-2.0, via FastF1): session results.
+
+More sources and references, and how Pitwall uses them: [docs/RESOURCES.md](docs/RESOURCES.md).
 
 ## Warming the cache
 

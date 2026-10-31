@@ -16,6 +16,8 @@
 
 Sizes: **S** ≈ a few evenings · **M** ≈ 1–2 weeks · **L** ≈ 3+ weeks (split it).
 
+Data sources, references and inspiration (with licences) live in **[RESOURCES.md](RESOURCES.md)**; milestones below link the ones they use.
+
 ---
 
 ## Now / Next / Later
@@ -23,9 +25,10 @@ Sizes: **S** ≈ a few evenings · **M** ≈ 1–2 weeks · **L** ≈ 3+ weeks (
 | | |
 |---|---|
 | **Now** | Phase 1 is complete. Next: Phase 2, lap comparison, once the data question below is settled |
-| **Data** | ⏸ **Waiting on FastF1.** F1's timing archive has needed an F1 TV login since ~15 Oct 2026 ([Fast-F1#978](https://github.com/theOehrly/Fast-F1/issues/978)). Until FastF1 supports it, build against the 4 cached sessions. **Plan B:** [OpenF1](https://openf1.org) as a fallback source (2023 onward; 2026 telemetry verified on 2026-10-17). Switch if FastF1 is still locked out when Phase 2 starts. |
+| **Data** | F1's timing archive has needed an F1 TV login since ~15 Oct 2026 ([Fast-F1#978](https://github.com/theOehrly/Fast-F1/issues/978)). ✅ **Workaround in place:** when FastF1 has nothing, the API falls back to the [TracingInsights archive](https://github.com/TracingInsights-Archive), so **2018 to May 2026** works (checked: 2025 China, 2026 Japan). ⏸ Still missing: 2026 races after May. **Plan B for those:** [OpenF1](https://openf1.org) (has current 2026 telemetry, verified 2026-10-17), if FastF1 is still locked out when Phase 2 starts. |
+| **Name** | ⚠ "Pitwall" clashes with three live F1 products ([pitwall.app](https://pitwall.app/), [f1pitwall.fun](https://f1pitwall.fun/), [f1pitwall.dev](https://f1pitwall.dev/)), one of them a replay and telemetry dashboard. Rename before v0.1 |
 | **Next** | Phase 2: lap comparison with auto-generated findings → **v0.1 public demo** |
-| **Then** | Phase 3: race story → Phase 4: AI race engineer → **v0.2** → Phase 5: replay → **v1.0** |
+| **Then** | Phase 3: race story (incl. team radio) → Phase 4: AI race engineer → **v0.2** → Phase 5: 3D race replay, F1 Manager-style → **v1.0** |
 | **Later** | Driver profiles & season view, live timing, strategy simulator |
 
 ---
@@ -38,9 +41,10 @@ apps/web  React + Vite + TS · TanStack Query · Zustand · ECharts · Three.js
 apps/api  FastAPI
    ├── api/         routes, error mapping
    ├── services/    FastF1 loading + in-memory session cache        ✅
+   │                TracingInsights fallback (2018 to May 2026)     ✅
    ├── analysis/    pure functions: compare, stints, degradation…   ⬜ (Phase 2+)
    ├── engineer/    LLM tool-calling over analysis/                 ⬜ (Phase 4)
-   └── storage      FastF1 disk cache ✅ · computed results as files on disk ⬜
+   └── storage      FastF1 + TracingInsights disk caches ✅ · computed results as files ⬜
 ```
 
 No database, Redis or WebSocket until a feature actually needs one. Historical data is immutable, so computed results are cached as files keyed by session.
@@ -162,11 +166,20 @@ No database, Redis or WebSocket until a feature actually needs one. Historical d
 
 ### 3.4 Pit-stop outcomes — M ⬜
 - For each stop, find the rivals within a pit-window gap. Undercut/overcut verdict = gap before the first car stopped vs gap after both stopped. Also track positions gained or lost through the stops.
+- Real stops and stop times from the **official FIA pit-stop summaries**, parsed with [fia-doc](https://github.com/harningle/fia-doc) ([FIA F1 Archives](https://api.fia.com/f1-archives)). That also settles safety-car pit-lane drive-throughs, which the timing data counts as stops (see Data caveats)
 
 ### 3.5 Race summary v1 (deterministic) — S ⬜
 - Start (lap 1 gains and losses), stops, SC periods, decisive moves, result, all generated from 3.1–3.4
 
 **Done when:** the Bahrain 2024 summary lists every pit stop and SC period, matching the official data.
+
+### 3.6 Team radio — S ⬜
+- Each driver's radio clips (listed by [OpenF1](https://openf1.org) `team_radio`, timestamped), placed on the lap they happened and playable in the driver dashboard and on the race timeline
+- Audio plays straight from F1's servers rather than being copied into Pitwall. Checked 2026-10-17: the clips still download (HTTP 200) despite the timing-archive lockout, for 2024 and 2026 races
+- Real radio fills the driver-dashboard slot the fake "AI Engineer" radio left in 1.2
+- Stretch: transcribe the clips (speech-to-text) so radio is searchable and readable, an idea from [undercut-f1](https://github.com/JustAman62/undercut-f1); the transcripts also become context for the AI engineer (Phase 4)
+
+**Done when:** in 2024 Bahrain, Verstappen's clips each sit on the right lap and play.
 
 ---
 
@@ -195,29 +208,47 @@ No database, Redis or WebSocket until a feature actually needs one. Historical d
 
 ---
 
-## Phase 5 — Race Replay → v1.0
+## Phase 5 — 3D Race Replay → v1.0
 
-**Goal:** watch any race unfold on the track with live timing, and jump to the moments that mattered.
+**Goal:** replay any race in 3D, *F1 Manager*-style: all 20 cars on the track in team colours, with broadcast and follow cameras, live timing, the driver's HUD and their radio, and a timeline to jump to the moments that mattered.
+
+**Inspiration, not assets:** the look is inspired by the F1 Manager games, but nothing is taken from them. Cars are a generic low-poly open-wheel model built in code (or a CC0 model), coloured by team, with no real liveries, logos or game assets.
 
 ### 5.1 Replay data — M ⬜
-- Position data resampled to a fixed ~4 Hz (the source rate; smoothing happens client-side), stored as columnar float32 chunks per 10 laps and served as static cached files over HTTP
-- Budget: 20 cars × 2 h × 4 Hz × (x, y) ≈ 5 MB raw per race, so no WebSocket is needed
+*Sources: FastF1 position data, or the [TracingInsights archive](https://github.com/TracingInsights-Archive)'s per-lap x/y/z for sessions FastF1 can't load. Reference for playback UX: [F1 Race Replay](https://github.com/IAmTomShaw/f1-race-replay), [F1ReplayTiming](https://github.com/adn8naiagent/F1ReplayTiming) (look only; no licence).*
+- Every car's x/y/**z** position, resampled to a fixed ~4 Hz (the source rate; smoothing happens client-side), stored as columnar float32 chunks per 10 laps and served as static cached files over HTTP
+- Budget: 20 cars × 2 h × 4 Hz × (x, y, z) ≈ 7 MB raw per race, so no WebSocket is needed, and it can ship with the online demo
+- Heading for each car is derived from its direction of travel (the data has no steering or car angle)
 
-### 5.2 Player — M ⬜
-- Reuses the Three.js track: play/pause, 1–20× speed, scrub bar, jump to lap
-- Timing tower synced to replay time
+### 5.2 Virtual onboard (one car) — M ⬜
+*The first slice, and the closest honest thing to a driver cam: real onboard video is F1 TV only.*
+- Play back one driver's lap or race: a cockpit-style HUD (speed, gear, rev lights, throttle and brake bars, DRS light) with a dot moving round the 2D analysis map
+- Play/pause, 0.5–20× speed, scrub, jump to lap; synced with the telemetry charts' crosshair
+- Their team radio (3.6) plays at the moment it was sent
 
-### 5.3 Event timeline — S ⬜
-- Overtakes (position swaps not caused by pit stops), stops and SC periods from Phase 3 shown on a timeline; click to jump
+**Done when:** following Verstappen's 2024 Bahrain fastest lap, the HUD's speed and gear match the telemetry chart at every point (±1 sample).
 
-### 5.4 Overlays — S ⬜
-- Flag states, close-gap highlight, telemetry strip for the selected driver
+### 5.3 3D race replay — L ⬜ *(split when started)*
+*Track geometry: [TUMFTM racetrack-database](https://github.com/TUMFTM/racetrack-database) centre lines and **track widths** (LGPL-3.0, 2021 layouts) so the asphalt has real width. Look and feel: [F1 Manager 2024](https://store.steampowered.com/app/2287220/F1_Manager_2024/), as inspiration only.*
+- The existing Three.js track with real elevation from z (Spa, COTA), and all 20 cars as instanced low-poly models in team colours with driver labels
+- Smooth interpolation between samples; play/pause, speed, scrub, jump to lap; timing tower synced to replay time
+- Cameras: broadcast orbit, top-down, follow-a-car chase cam, and a "TV director" mode that cuts to the closest battle. Following a car shows its 5.2 HUD
 
-**Done when:** a full race plays at 60 fps on a mid-range laptop, and every Phase 3 event is reachable from the timeline.
+**Done when:** a full race plays at 60 fps with all 20 cars on a mid-range laptop, and the replay's running order matches the timing tower at the end of every lap.
+
+### 5.4 Event timeline — S ⬜
+- Overtakes (position swaps not caused by pit stops), stops, SC periods and radio messages from Phase 3 shown on a timeline; click to jump the replay there
+
+### 5.5 Overlays — S ⬜
+- Flag states and safety car on track, close-gap (< 1 s) highlight, pit-lane timer, telemetry strip for the followed driver
+
+**Done when:** every Phase 3 event is reachable from the timeline, and jumping to one shows the right cars in the right place.
 
 ---
 
 ## Phase 6 — Driver Profiles & Season *(later)*
+
+*Sources: [F1DB](https://github.com/f1db/f1db) (CC-BY-4.0, credit required) and [Jolpica](https://github.com/jolpica/jolpica-f1) for history and standings; TracingInsights' **g-force** channels (acc_x/y/z) as an extra driving-style metric; [f1metrics](https://f1metrics.wordpress.com/) for how to rate drivers statistically.*
 
 - **Transparent metrics, no black-box ML:** qualifying gap to teammate, race pace vs teammate (clean, fuel-corrected laps), degradation vs the field on the same compound, consistency (spread of clean lap times), lap-1 gains, overtakes made and lost. Each is shown as a percentile against the field.
 - Labels like "Tyre whisperer" only when a percentile rule backs them, never from clustering about 20 drivers
@@ -228,7 +259,7 @@ No database, Redis or WebSocket until a feature actually needs one. Historical d
 
 ## Parking lot (only if something pulls for it)
 
-Live timing via OpenF1 · strategy what-if simulator · image/video export · voice interface · mobile PWA
+Live timing via [OpenF1](https://openf1.org) (references: [f1-dash](https://github.com/slowlydev/f1-dash), [f1-live-data](https://github.com/f1stuff/f1-live-data)) · strategy what-if simulator ([TUMFTM race-simulation](https://github.com/TUMFTM/race-simulation), [racing-line optimisation](https://github.com/TUMFTM/global_racetrajectory_optimization)) · circuit pages on a real map ([f1-circuits](https://github.com/bacinger/f1-circuits) GeoJSON) · compound mapping C1–C5 per race ([Pirelli press](https://press.pirelli.com/en/?h=1&t=formula+1)) · image/video export · voice interface · mobile PWA
 
 ## Cut from the previous roadmap
 
@@ -250,12 +281,13 @@ Live timing via OpenF1 · strategy what-if simulator · image/video export · vo
 |---|---|
 | Car telemetry is ~4 Hz, interpolated | At 300 km/h that's ~20 m between samples, so brake-point differences under ~20 m are noise |
 | `Brake` is on/off | No brake pressure; "braking aggression" can only mean timing, not force |
-| X/Y position isn't a precise racing line | Don't compare driving lines; compare speeds and timings |
+| X/Y position isn't a precise racing line, and is only ~4 Hz | Don't compare driving lines; compare speeds and timings. In the 3D replay, cars fighting wheel to wheel can visually overlap or swap sides; car heading is inferred from movement |
+| Real onboard video is licensed to F1 TV (paid, DRM-protected); there's no public API | Never scrape or re-host it. The virtual onboard (5.2) is built from telemetry instead; at most, link out to F1 TV for subscribers |
 | No fuel, tyre temperature, ERS or brake temperature data | Never display them; fuel load is modelled, not measured |
 | 2026 rules replace DRS with active aero and an overtake mode | DRS-based features apply to ≤ 2025; check what the DRS channel means for 2026 sessions |
 | Cold session loads download a lot of data | Precompute or warm the demo sessions; show progress |
 | When the safety car leads the field through the pit lane, FastF1 and OpenF1 both record each pass as a pit stop, and their tyre ages for those laps disagree | Pitwall counts a stop only when tyre age resets. That fixes most drivers, but one can still be over-counted (Stroll shows 5 in 2025 Australia; really 2) |
-| **Since ~15 Oct 2026, F1's timing archive returns 401 without an F1 TV login** ([Fast-F1#978](https://github.com/theOehrly/Fast-F1/issues/978)); FastF1's mirror has no 2023–2026 data | Only cached sessions load (2024 Bahrain Q/R, 2024 Saudi R, 2025 Australia R); others get results only. CI skips `livedata` tests. **Never clear `app/f1_cache`**: a backup is at `F:\Code\Backups\pitwall-f1-cache-2026-10-17` |
+| **Since ~15 Oct 2026, F1's timing archive returns 401 without an F1 TV login** ([Fast-F1#978](https://github.com/theOehrly/Fast-F1/issues/978)); FastF1's mirror has no 2023–2026 data | FastF1 serves only cached sessions (2024 Bahrain Q/R, 2024 Saudi R, 2025 Australia R); everything else from 2018 to May 2026 comes from the TracingInsights fallback, and later 2026 races get results only. CI skips `livedata` tests. **Never clear `app/f1_cache`**: a backup is at `F:\Code\Backups\pitwall-f1-cache-2026-10-17` |
 
 ## Engineering standards
 
