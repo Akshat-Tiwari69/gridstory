@@ -97,6 +97,19 @@ def test_segments_tile_the_lap_and_sum_to_the_finish_delta():
     assert {s.kind for s in segs} == {"corner", "straight"}
 
 
+def test_close_corners_absorb_sub_grid_gaps():
+    corners = [c.model_copy(update={"distance": d})
+               for c, d in zip(CORNERS, (800.0, 1043.0, 1800.0, 2800.0))]
+    r = run(synth(), synth(speed_k=1.02), corners)
+    assert all(a.end_m == b.start_m for a, b in zip(r.segments, r.segments[1:]))
+    assert sum(s.gain_a_s for s in r.segments) == pytest.approx(r.finish.delta_s, abs=1e-3)
+
+
+def test_discrete_channels_choose_a_recorded_sample():
+    sampled = cmp._nearest(np.array([0, 4, 5, 6, 10]), np.array([0, 10]), np.array([2, 6]))
+    assert sampled.tolist() == [2, 2, 2, 6, 6]
+
+
 def test_findings_are_the_biggest_visible_segments():
     r = run(synth(), synth(depth=(35, 15, 25, 35)))  # B carries more speed through T2 and T3
     by_gain = sorted(r.segments, key=lambda s: -abs(s.gain_a_s))
@@ -137,6 +150,15 @@ def test_missing_brake_channel_is_not_invented():
         if s.corner:
             assert s.corner.b.brake_on_m is None and s.corner.brake_diff_m is None
     assert all("brakes" not in f.text for f in r.findings)
+
+
+def test_missing_throttle_channel_is_not_invented():
+    b = synth(speed_k=1.02)
+    b = b.model_copy(update={"throttle": [0.0] * len(b.distance)})
+    r = run(synth(), b)
+    assert "throttle_missing" in codes(r) and r.channels.throttle_b is None
+    assert all(s.corner.b.throttle_on_m is None for s in r.segments if s.corner)
+    assert all("gets on the throttle" not in f.text for f in r.findings)
 
 
 def test_missing_corners_fall_back_to_distance_segments_and_say_so():

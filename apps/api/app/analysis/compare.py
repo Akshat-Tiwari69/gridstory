@@ -148,7 +148,12 @@ def _interp(grid, x, y):
 
 
 def _nearest(grid, x, y):
-    return None if y is None else np.rint(np.interp(grid, x, y)).astype(int)
+    if y is None:
+        return None
+    right = np.clip(np.searchsorted(x, grid), 0, len(x) - 1)
+    left = np.maximum(right - 1, 0)
+    nearest = np.where(np.abs(grid - x[left]) <= np.abs(x[right] - grid), left, right)
+    return np.rint(y[nearest]).astype(int)
 
 
 def _speed_at(trace: Trace, d: float) -> float:
@@ -202,6 +207,8 @@ def build_spans(length: float, corners: Sequence[Corner]) -> List[_Span]:
             name = (f"Start to {_corner_label(c)}" if i == 0
                     else f"{_corner_label(usable[i - 1])}-{_corner_label(c)} straight")
             spans.append(_Span(f"s{len(spans) + 1}", "straight", name, cursor, lo))
+        else:
+            lo = cursor  # include sub-grid gaps in the following corner's gain
         spans.append(_Span(f"c{c.number}{c.letter or ''}", "corner", _corner_label(c), lo, hi,
                            corner=c, prev_end=cursor))
         cursor = hi
