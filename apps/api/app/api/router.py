@@ -8,8 +8,10 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
+from app.analysis.compare import ComparisonError
 from app.models.f1 import (
     CircuitInfo,
+    LapComparison,
     LapData,
     MultiDriverTelemetry,
     RaceControlMessage,
@@ -59,6 +61,31 @@ def get_telemetry_compare(
     if not driver_list:
         raise HTTPException(status_code=422, detail="Provide at least one driver abbreviation")
     return service.get_multi_telemetry(year, event, session_type, driver_list, lap)
+
+
+@router.get(SESSION + "/compare", response_model=LapComparison)
+def get_lap_comparison(
+    year: int,
+    event: str,
+    session_type: str,
+    driver_a: str = Query(..., min_length=2, max_length=3, description="Driver A, e.g. VER"),
+    lap_a: int = Query(default=0, ge=0, description="Lap number for A; 0 = A's fastest lap"),
+    driver_b: str = Query(..., min_length=2, max_length=3, description="Driver B, e.g. LEC"),
+    lap_b: int = Query(default=0, ge=0, description="Lap number for B; 0 = B's fastest lap"),
+    service: F1DataService = Service,
+):
+    """Two independent laps compared on distance. delta = time_B - time_A (positive: B behind).
+
+    Unlike /telemetry/compare the laps are chosen per side, so one driver's lap 12 can be
+    compared with the same driver's lap 16.
+    """
+    try:
+        return service.compare_laps(
+            year, event, session_type,
+            driver_a.strip().upper(), lap_a, driver_b.strip().upper(), lap_b,
+        )
+    except ComparisonError as e:
+        raise HTTPException(status_code=422, detail=str(e)) from e
 
 
 @router.get(SESSION + "/telemetry/{driver}/{lap_number}", response_model=TelemetryDataset)

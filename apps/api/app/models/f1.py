@@ -153,3 +153,114 @@ class TrackPoint(BaseModel):
     """A single XY coordinate point of the track outline."""
     x: float
     y: float
+
+
+# --- Lap comparison -------------------------------------------------------------------------
+
+
+class LapRef(BaseModel):
+    """A resolved lap: which driver's lap was actually compared, and its official time."""
+    driver: str
+    lap_number: int
+    requested_lap: int  # what the caller asked for; 0 = fastest timed lap
+    lap_time: float  # official seconds
+    compound: str = ""
+    tyre_life: float = 0.0
+    is_accurate: bool = True
+    is_out_lap: bool = False
+    is_in_lap: bool = False
+    label: str  # "VER L16"
+
+
+class ComparisonWarning(BaseModel):
+    code: str
+    message: str
+    lap: Optional[str] = None  # "A", "B" or None for both/neither
+
+
+class ComparisonChannels(BaseModel):
+    """Both laps on one shared distance grid. A channel is None when that lap lacks it."""
+    distance: List[float]  # metres from the start line, on the common length (see alignment)
+    time_a: List[float]  # seconds since lap start
+    time_b: List[float]
+    speed_a: List[float]
+    speed_b: List[float]
+    throttle_a: Optional[List[float]] = None
+    throttle_b: Optional[List[float]] = None
+    brake_a: Optional[List[int]] = None
+    brake_b: Optional[List[int]] = None
+    gear_a: Optional[List[int]] = None
+    gear_b: Optional[List[int]] = None
+
+
+class ComparisonAlignment(BaseModel):
+    grid_step_m: float
+    common_length_m: float
+    length_a_m: float  # integrated telemetry distance of each lap before alignment
+    length_b_m: float
+    scale_a: float  # factor applied to lap A's distance (1.0 = untouched)
+    scale_b: float
+    method: str  # "scaled_to_mean_length" or "truncated_to_common_coverage"
+    resolution_a_m: float  # median native sample spacing
+    resolution_b_m: float
+
+
+class ComparisonFinish(BaseModel):
+    """Delta at the finish line vs the official lap-time difference (B minus A)."""
+    delta_s: Optional[float] = None  # None when coverage differs too much to reach a finish
+    official_delta_s: float
+    error_s: Optional[float] = None  # delta_s - official_delta_s
+    within_tolerance: Optional[bool] = None
+    tolerance_s: float
+
+
+class CornerSide(BaseModel):
+    entry_speed: Optional[float] = None
+    min_speed: Optional[float] = None
+    min_speed_distance: Optional[float] = None
+    exit_speed: Optional[float] = None
+    brake_on_m: Optional[float] = None  # None: no brake application detected / no brake channel
+    throttle_on_m: Optional[float] = None
+
+
+class CornerMetrics(BaseModel):
+    a: CornerSide
+    b: CornerSide
+    brake_diff_m: Optional[float] = None  # b - a; positive = B brakes later
+    brake_diff_significant: bool = False  # False when under the native sample spacing
+    throttle_diff_m: Optional[float] = None  # b - a; positive = B gets on the throttle later
+    throttle_diff_significant: bool = False
+
+
+class ComparisonSegment(BaseModel):
+    id: str
+    kind: str  # "corner" | "straight" | "distance"
+    label: str
+    corner_number: Optional[int] = None
+    start_m: float
+    end_m: float
+    delta_start_s: float
+    delta_end_s: float
+    gain_a_s: float  # delta_end - delta_start; positive = lap A gained time on lap B here
+    corner: Optional[CornerMetrics] = None
+
+
+class ComparisonFinding(BaseModel):
+    rank: int
+    segment_id: str
+    winner: str  # "A" or "B"
+    gain_s: float  # always positive: time the winner gained in this segment
+    text: str
+
+
+class LapComparison(BaseModel):
+    """Lap A vs lap B. delta = time_b - time_a at equal distance: positive = B is behind A."""
+    lap_a: LapRef
+    lap_b: LapRef
+    alignment: ComparisonAlignment
+    channels: ComparisonChannels
+    delta_s: List[float]  # cumulative, same grid as channels.distance
+    finish: ComparisonFinish
+    segments: List[ComparisonSegment]
+    findings: List[ComparisonFinding]
+    warnings: List[ComparisonWarning]

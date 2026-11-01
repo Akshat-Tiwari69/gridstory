@@ -13,6 +13,7 @@ import fastf1
 import pandas as pd
 from fastf1.exceptions import DataNotLoadedError
 
+from app.analysis.compare import compare_laps
 from app.core.config import get_settings
 from app.models.f1 import (
     CircuitInfo,
@@ -20,7 +21,9 @@ from app.models.f1 import (
     Driver,
     DriverResult,
     Event,
+    LapComparison,
     LapData,
+    LapRef,
     MultiDriverTelemetry,
     RaceControlMessage,
     Season,
@@ -484,6 +487,51 @@ class F1DataService:
                 _tel_cache.pop(next(iter(_tel_cache)))
 
         return result
+
+    @staticmethod
+    def _lap_ref(laps: List[LapData], driver: str, lap: int) -> LapRef:
+        """Resolve a selection against the lap table. lap 0 → the driver's fastest timed lap.
+
+        Works from get_laps, so FastF1 and the TracingInsights fallback resolve identically.
+        """
+        mine = [x for x in laps if x.driver == driver]
+        if not mine:
+            raise NotFoundError(f"No laps for driver '{driver}' in this session")
+        if lap == 0:
+            timed = [x for x in mine if x.lap_time]
+            if not timed:
+                raise NotFoundError(f"No timed lap for driver '{driver}'")
+            chosen = min(timed, key=lambda x: x.lap_time)
+        else:
+            chosen = next((x for x in mine if x.lap_number == lap), None)
+            if chosen is None:
+                raise NotFoundError(f"Driver '{driver}' has no lap {lap}")
+            if not chosen.lap_time:
+                raise NotFoundError(f"Lap {lap} of driver '{driver}' has no official lap time")
+        return LapRef(
+            driver=driver, lap_number=chosen.lap_number, requested_lap=lap,
+            lap_time=chosen.lap_time, compound=chosen.compound, tyre_life=chosen.tyre_life,
+            is_accurate=chosen.is_accurate,
+            is_out_lap=chosen.pit_out_time is not None,
+            is_in_lap=chosen.pit_in_time is not None,
+            label=f"{driver} L{chosen.lap_number}",
+        )
+
+    def compare_laps(
+        self, year: int, event: str, session_type: str,
+        driver_a: str, lap_a: int, driver_b: str, lap_b: int,
+    ) -> LapComparison:
+        """Lap A vs lap B (any drivers, any laps; 0 = fastest). See app.analysis.compare."""
+        laps = self.get_laps(year, event, session_type)
+        ref_a, ref_b = self._lap_ref(laps, driver_a, lap_a), self._lap_ref(laps, driver_b, lap_b)
+        # Telemetry by explicit lap number: both laps are fetched the same way on both sources.
+        tel_a = self.get_telemetry(year, event, session_type, ref_a.driver, ref_a.lap_number)
+        tel_b = self.get_telemetry(year, event, session_type, ref_b.driver, ref_b.lap_number)
+        try:
+            corners = self.get_circuit_info(year, event, session_type).corners
+        except (NotFoundError, DataNotLoadedError):
+            corners = []  # reported as a "corners_missing" warning, not a failure
+        return compare_laps(ref_a, tel_a, ref_b, tel_b, corners)
 
     def get_weather(self, year: int, event: str, session_type: str) -> List[WeatherData]:
         session = _get_session(year, event, session_type, load_telemetry=False)
