@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { Season, SessionResults, LapData, TelemetryDataset, MultiDriverTelemetry, WeatherData, RaceControlMessage, CircuitInfo, TrackPoint } from '../types/f1';
+import type { Season, SessionResults, LapData, TelemetryDataset, MultiDriverTelemetry, WeatherData, RaceControlMessage, CircuitInfo, TrackPoint, LapComparison, LapSelection, DemoCompareIndex } from '../types/f1';
 
 // The online demo (GitHub Pages) has no API: it reads static JSON exported from cached
 // sessions by apps/api/scripts/export_demo.py. See scripts/publish-demo.sh.
@@ -87,6 +87,12 @@ export const f1Service = {
   getTelemetry: (year: number, event: string, sessionType: string, driver: string, lapNumber: number) =>
     get<TelemetryDataset>(`${sessionPath(year, event, sessionType)}/telemetry/${driver}/${lapNumber}`),
 
+  // The lap behind one side of a comparison (x/y for the map). The demo only has fastest laps.
+  getLapTrace: (year: number, event: string, sessionType: string, driver: string, lapNumber: number) =>
+    IS_DEMO
+      ? get<TelemetryDataset>(`${sessionPath(year, event, sessionType)}/telemetry/${driver}`)
+      : get<TelemetryDataset>(`${sessionPath(year, event, sessionType)}/telemetry/${driver}/${lapNumber}`),
+
   // Multi-driver compare — single backend request. lap=0 means each driver's fastest.
   getCompareTelemetry: async (year: number, event: string, sessionType: string, drivers: string[], lap: number): Promise<MultiDriverTelemetry> => {
     if (IS_DEMO) {
@@ -103,6 +109,29 @@ export const f1Service = {
     });
     return response.data;
   },
+
+  // Two independent laps (lap 0 = fastest). The demo only has exported fastest-lap pairs.
+  getComparison: (year: number, event: string, sessionType: string, a: LapSelection, b: LapSelection) => {
+    if (IS_DEMO) {
+      if (a.lap !== 0 || b.lap !== 0) {
+        return Promise.reject(new Error("The online demo only has fastest-lap comparisons. Run GridStory locally for any lap."));
+      }
+      // A static host may answer a missing file with index.html (200), so check the shape too.
+      return get<LapComparison>(`${sessionPath(year, event, sessionType)}/compare/${a.driver}-${b.driver}`).then((c) => {
+        if (!c?.channels) throw new Error(`${a.driver} vs ${b.driver} is not included in the online demo.`);
+        return c;
+      });
+    }
+    return api
+      .get<LapComparison>(`${sessionPath(year, event, sessionType)}/compare`, {
+        params: { driver_a: a.driver, lap_a: a.lap, driver_b: b.driver, lap_b: b.lap },
+      })
+      .then((r) => r.data);
+  },
+
+  /** Demo only: which driver pairs have a comparison file. */
+  getDemoComparisons: (year: number, event: string, sessionType: string) =>
+    get<DemoCompareIndex>(`${sessionPath(year, event, sessionType)}/compare/index`),
 
   getWeather: (year: number, event: string, sessionType: string) =>
     get<WeatherData[]>(`${sessionPath(year, event, sessionType)}/weather`),

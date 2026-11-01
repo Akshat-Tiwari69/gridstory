@@ -25,6 +25,10 @@ DEMO_SESSIONS = [
     (2024, "Saudi Arabian Grand Prix", "R"),
     (2025, "Australian Grand Prix", "R"),
 ]
+# Comparisons are Python-computed (analysis/compare.py) fastest-lap pairs: every ordered pair of
+# the quickest drivers plus every teammate pair, so the demo's "fastest" and "teammates"
+# shortcuts always resolve. ~100 kB each, listed in compare/index.json.
+COMPARE_TOP_DRIVERS = 5
 SESSION_FILES = ["results", "laps", "weather", "race-control", "track-outline", "circuit"]
 
 client = TestClient(app)
@@ -47,6 +51,23 @@ def write(out: Path, rel: str, data) -> None:
     path.write_text(json.dumps(data, separators=(",", ":")), encoding="utf-8")
 
 
+def comparison_pairs(laps: list[dict], results: dict) -> list[tuple[str, str]]:
+    best: dict[str, float] = {}
+    for lap in laps:
+        if lap["lap_time"] is not None:
+            best[lap["driver"]] = min(best.get(lap["driver"], float("inf")), lap["lap_time"])
+    fastest = sorted(best, key=best.__getitem__)[:COMPARE_TOP_DRIVERS]
+    pairs = {(a, b) for a in fastest for b in fastest if a != b}
+    teams = defaultdict(list)
+    for d in results["drivers"]:
+        if d["driver"]["abbreviation"] in best:
+            teams[d["driver"]["team"]].append(d["driver"]["abbreviation"])
+    for members in teams.values():
+        pairs |= {(a, b) for a in members for b in members if a != b}
+    # Fastest driver first, so the manifest order doubles as the "fastest" shortcut.
+    return sorted(pairs, key=lambda p: (best[p[0]], best[p[1]]))
+
+
 def main(out: Path) -> None:
     wanted = defaultdict(set)  # year -> {(event, session type)}
     for year, event, stype in DEMO_SESSIONS:
@@ -62,7 +83,15 @@ def main(out: Path) -> None:
             r = client.get(f"/api/v1{base}/telemetry/{drv}/0")
             if r.status_code == 200:  # drivers without a timed lap have nothing to show
                 write(out, f"{dest}/telemetry/{drv}", r.json())
-        print(f"exported {year} {event} {stype} ({len(drivers)} drivers)")
+        pairs = []
+        for a, b in comparison_pairs(fetch(f"{base}/laps"), fetch(f"{base}/results")):
+            query = {"driver_a": a, "lap_a": 0, "driver_b": b, "lap_b": 0}
+            r = client.get(f"/api/v1{base}/compare", params=query)
+            if r.status_code == 200:
+                write(out, f"{dest}/compare/{a}-{b}", r.json())
+                pairs.append([a, b])
+        write(out, f"{dest}/compare/index", {"pairs": pairs})
+        print(f"exported {year} {event} {stype} ({len(drivers)} drivers, {len(pairs)} comparisons)")
 
     # Seasons trimmed to the exported sessions, so the selector only offers what exists.
     for year, pairs in wanted.items():

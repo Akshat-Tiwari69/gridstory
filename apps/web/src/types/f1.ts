@@ -131,3 +131,120 @@ export interface DriverResult {
   q3?: number;
   gap?: string;
 }
+
+// --- Lap comparison (GET /compare, computed in apps/api/app/analysis/compare.py) ---
+
+export interface LapRef {
+  driver: string;
+  lapNumber: number;
+  requestedLap: number;
+  lapTime: number;
+  compound: string;
+  tyreLife: number;
+  isAccurate: boolean;
+  isOutLap: boolean;
+  isInLap: boolean;
+  label: string;
+}
+
+export interface ComparisonWarning {
+  code: string;
+  message: string;
+  lap?: 'A' | 'B' | null;
+}
+
+export interface ComparisonChannels {
+  distance: number[];
+  timeA: number[];
+  timeB: number[];
+  speedA: number[];
+  speedB: number[];
+  throttleA?: number[] | null;
+  throttleB?: number[] | null;
+  brakeA?: number[] | null;
+  brakeB?: number[] | null;
+  gearA?: number[] | null;
+  gearB?: number[] | null;
+}
+
+export interface ComparisonAlignment {
+  gridStepM: number;
+  commonLengthM: number;
+  lengthAM: number;
+  lengthBM: number;
+  scaleA: number;
+  scaleB: number;
+  method: string;
+  resolutionAM: number;
+  resolutionBM: number;
+}
+
+export interface ComparisonFinish {
+  deltaS?: number | null;
+  officialDeltaS: number;
+  errorS?: number | null;
+  withinTolerance?: boolean | null;
+  toleranceS: number;
+}
+
+export interface CornerSide {
+  entrySpeed?: number | null;
+  minSpeed?: number | null;
+  minSpeedDistance?: number | null;
+  exitSpeed?: number | null;
+  brakeOnM?: number | null;
+  throttleOnM?: number | null;
+}
+
+export interface CornerMetrics {
+  a: CornerSide;
+  b: CornerSide;
+  brakeDiffM?: number | null;
+  brakeDiffSignificant: boolean;
+  throttleDiffM?: number | null;
+  throttleDiffSignificant: boolean;
+}
+
+export interface ComparisonSegment {
+  id: string;
+  kind: 'corner' | 'straight' | 'distance' | string;
+  label: string;
+  cornerNumber?: number | null;
+  startM: number;
+  endM: number;
+  deltaStartS: number;
+  deltaEndS: number;
+  gainAS: number; // positive: lap A gained time on lap B in this segment
+  corner?: CornerMetrics | null;
+}
+
+export interface ComparisonFinding {
+  rank: number;
+  segmentId: string;
+  winner: 'A' | 'B';
+  gainS: number;
+  text: string;
+}
+
+export interface LapComparison {
+  lapA: LapRef;
+  lapB: LapRef;
+  alignment: ComparisonAlignment;
+  channels: ComparisonChannels;
+  deltaS: number[]; // time_B - time_A: positive = B is behind
+  finish: ComparisonFinish;
+  segments: ComparisonSegment[];
+  findings: ComparisonFinding[];
+  warnings: ComparisonWarning[];
+}
+
+/** One side of a comparison; lap 0 = that driver's fastest timed lap. */
+export interface LapSelection {
+  driver: string;
+  lap: number;
+}
+
+/** Demo only: the fastest-lap pairs that were exported (compare/index.json). */
+export interface DemoCompareIndex {
+  pairs: [string, string][];
+}

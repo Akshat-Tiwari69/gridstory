@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Activity, MapPin } from 'lucide-react';
+import { LayoutDashboard, Activity, MapPin, GitCompareArrows } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { toQuery, useSessionStore } from '../../stores/sessionStore';
 import './Sidebar.css';
@@ -12,6 +12,7 @@ interface SidebarProps {
 const NAV_ITEMS: { path: string; Icon: LucideIcon; label: string; end: boolean }[] = [
   { path: '/',          Icon: LayoutDashboard, label: 'Dashboard',  end: true  },
   { path: '/telemetry', Icon: Activity,        label: 'Telemetry',  end: false },
+  { path: '/compare',  Icon: GitCompareArrows, label: 'Compare',  end: false },
   { path: '/track',     Icon: MapPin,          label: 'Track Map',  end: false },
 ];
 

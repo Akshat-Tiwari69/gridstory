@@ -11,6 +11,9 @@ const TelemetryCharts = lazy(() =>
 const TrackMap = lazy(() =>
   import('./features/telemetry/TrackMap').then((m) => ({ default: m.TrackMap }))
 );
+const LapComparison = lazy(() =>
+  import('./features/telemetry/LapComparison').then((m) => ({ default: m.LapComparison }))
+);
 import './styles/globals.css';
 
 const queryClient = new QueryClient({
@@ -30,6 +33,7 @@ function App() {
           <Route path="/" element={<DashboardLayout />}>
             <Route index element={<DashboardView />} />
             <Route path="telemetry" element={<TelemetryCharts />} />
+            <Route path="compare" element={<LapComparison />} />
             <Route path="track" element={<TrackMap />} />
           </Route>
         </Routes>

@@ -128,7 +128,7 @@ No database, Redis or WebSocket until a feature actually needs one. Historical d
 
 **Done when:** the delta at the finish line equals the real lap time difference within 0.05 s (this is a built-in correctness check).
 
-### 2.2 Comparison view — M ⬜
+### 2.2 Comparison view — M ✅
 - Driver A/lap vs driver B/lap pickers with "fastest vs fastest" and "teammates" shortcuts
 - Delta trace under the speed traces, a corner-by-corner table, the track map coloured by who's faster, and brake-point markers
 

@@ -3,6 +3,7 @@ import { useSessionStore } from '../../stores/sessionStore';
 import { useCursorStore } from '../../stores/cursorStore';
 import { nearestIndex, useCircuit, useCompareTelemetry, useLaps } from '../../hooks/useSessionQueries';
 import { SECTOR_COLORS } from './trackConstants';
+import { rotate } from './trackGeometry';
 import type { LapData } from '../../types/f1';
 import './AnalysisTrackMap.css';
 
@@ -11,10 +12,6 @@ import './AnalysisTrackMap.css';
 const SPEED_RAMP = ['#104281', '#184f95', '#1c5cab', '#256abf', '#2a78d6', '#3987e5', '#5598e7', '#6da7ec', '#86b6ef', '#9ec5f4', '#b7d3f6', '#cde2fb'];
 
 type Mode = 'sectors' | 'speed';
-
-/** Rotate a point by `rad` (counter-clockwise), the same transform FastF1 uses for its maps. */
-const rotate = (x: number, y: number, rad: number): [number, number] =>
-  [x * Math.cos(rad) - y * Math.sin(rad), x * Math.sin(rad) + y * Math.cos(rad)];
 
 /**
  * 2D map of the first selected driver's lap, rotated to the official circuit orientation.
