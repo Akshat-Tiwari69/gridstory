@@ -141,7 +141,7 @@ No database, Redis or WebSocket until a feature actually needs one. Historical d
 **Done when:** on Bahrain 2024 Q (VER vs LEC fastest laps), the top 3 findings agree with what the delta trace visibly shows.
 
 ### 2.4 Release v0.1 — S ⬜
-*Release remains open: the comparison build has not been independently reviewed or deployed. The current static snapshot has four configured sessions, no backend and no arbitrary lap comparisons. A hosted API and cache volume remain a separate release decision. Phase 2 does not include live timing, racing-line comparisons, brake pressure, or AI-generated explanations.*
+*Release remains open: the comparison build has not been independently reviewed or deployed. The local static export has four configured sessions, no backend and no arbitrary lap comparisons. The public snapshot checked on 2026-11-01 does not yet include the Compare view. A hosted API and cache volume remain a separate release decision. Phase 2 does not include live timing, racing-line comparisons, brake pressure, or AI-generated explanations.*
 - Deploy: API in a Docker container with a persistent volume for the FastF1 cache; web as a static site
 - The cache must be warmed locally and shipped, since nothing can download new sessions while F1's archive needs a login (see Data caveats).
 - README with screenshots and a demo link; 3–5 preloaded showcase sessions

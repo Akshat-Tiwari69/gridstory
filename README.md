@@ -18,7 +18,7 @@ The gap is elapsed time B minus elapsed time A at the same distance: positive me
 
 Telemetry is sampled at roughly 4 Hz and resampled to a 5 m grid; small brake/throttle differences are suppressed at native sample resolution. Brake is on/off, not pressure. Missing channels, incomplete laps and alignment limitations are reported in the view; if telemetry does not reach the finish, no finish gap is claimed. See [comparison API and caveats](docs/lap-comparison-api.md).
 
-The static demo has no API. Its export lists 2024 Bahrain qualifying and race, 2024 Saudi Arabian race, and 2025 Australian race. It includes fastest-lap telemetry and successfully exported ordered comparisons among the five quickest drivers and teammate pairs only. Lap pickers are disabled, unavailable pairs cannot be compared, and it cannot fetch other sessions or arbitrary laps. The linked public deployment may not yet contain the latest local comparison build.
+The static demo has no API. Its export lists 2024 Bahrain qualifying and race, 2024 Saudi Arabian race, and 2025 Australian race. It includes fastest-lap telemetry and successfully exported ordered comparisons among the five quickest drivers and teammate pairs only. Lap pickers are disabled, unavailable pairs cannot be compared, and it cannot fetch other sessions or arbitrary laps. As checked on 2026-11-01, the linked public deployment does not yet include the Compare view; these comparison limits describe the local static build.
 
 ## Repository layout
 
