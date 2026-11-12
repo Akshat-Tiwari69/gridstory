@@ -1,7 +1,8 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Activity, MapPin, GitCompareArrows } from 'lucide-react';
+import { LayoutDashboard, Activity, MapPin, GitCompareArrows, Clapperboard } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { toQuery, useSessionStore } from '../../stores/sessionStore';
+import { IS_DEMO } from '../../services/api';
 import './Sidebar.css';
 
 interface SidebarProps {
@@ -15,6 +16,9 @@ const NAV_ITEMS: { path: string; Icon: LucideIcon; label: string; end: boolean }
   { path: '/compare',  Icon: GitCompareArrows, label: 'Compare',  end: false },
   { path: '/track',     Icon: MapPin,          label: 'Track Map',  end: false },
 ];
+
+// The 3D replay is a separate static page (apps/replay3d): published beside the demo, or served by `make replay`.
+const REPLAY_URL = IS_DEMO ? `${import.meta.env.BASE_URL}replay/` : 'http://localhost:5180/';
 
 export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const search = useSessionStore(toQuery);
@@ -38,6 +42,12 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
             {!collapsed && <span className="sidebar-label">{label}</span>}
           </NavLink>
         ))}
+        <a href={REPLAY_URL} className="sidebar-item" title={collapsed ? '3D Replay' : undefined}>
+          <span className="sidebar-icon">
+            <Clapperboard size={16} strokeWidth={1.75} />
+          </span>
+          {!collapsed && <span className="sidebar-label">3D Replay</span>}
+        </a>
       </nav>
     </aside>
   );

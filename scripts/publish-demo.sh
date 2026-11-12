@@ -23,6 +23,11 @@ else
   (cd "$ROOT/apps/web" && VITE_STATIC_DATA=true GRIDSTORY_BASE="$REPO_NAME" npm run build)
 fi
 (cd "$ROOT/apps/api" && "$PY" -m scripts.export_demo "$EXPORT_DIR")
+# The 3D replay goes up as committed, via git archive: its licensed car/venue models are git-ignored in the
+# working tree, so they can never reach the public site this way. The data tools stay in the repo only.
+mkdir -p "$DIST/replay"
+git -C "$ROOT" archive HEAD apps/replay3d ':(exclude)apps/replay3d/tools' ':(exclude)apps/replay3d/README.md' \
+  | tar -x -C "$DIST/replay" --strip-components=2
 cp "$DIST/index.html" "$DIST/404.html"  # Pages serves 404.html for deep links; the SPA routes from there
 touch "$DIST/.nojekyll"
 

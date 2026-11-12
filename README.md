@@ -73,7 +73,7 @@ Opens on http://localhost:5173 and talks to the API on port 8000.
 
 ### 3D replay prototype (`apps/replay3d`)
 
-A directed 3D replay of the 2024 Bahrain GP pit window (Hamilton vs Piastri, laps 33–35), driven entirely by the race data. It's a static page: `make replay`, or `python -m http.server 5180` inside `apps/replay3d`, then open http://localhost:5180. It ships with built-in car and circuit models; licensed models can be dropped in locally and are never committed. See [apps/replay3d/README.md](apps/replay3d/README.md).
+A directed 3D replay of the 2024 Bahrain GP pit window (Hamilton vs Piastri, laps 33–35), driven entirely by the race data. It's a static page: `make replay`, or `python -m http.server 5180` inside `apps/replay3d`, then open http://localhost:5180. It ships with built-in car and circuit models; licensed models can be dropped in locally and are never committed. Live, with the built-in models: https://akshat-tiwari69.github.io/gridstory/replay/ (also linked from the demo sidebar). See [apps/replay3d/README.md](apps/replay3d/README.md).
 
 ## Data sources and credits
 
