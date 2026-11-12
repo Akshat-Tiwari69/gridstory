@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none" role="img" aria-labelledby="gridstory-icon-title">
+  <title id="gridstory-icon-title">GridStory</title>
+  <!-- Design note: circuit G, simplified to a 2px stroke and at least 2px inset at 16px; token colours match the header lockup. -->
+  <rect width="32" height="32" rx="6" fill="#e10600"/>
+  <path d="M23 9H13L8 14V23H19L24 18V16H17" stroke="#eaeaf0" stroke-width="4" stroke-linejoin="round"/>
+</svg>
