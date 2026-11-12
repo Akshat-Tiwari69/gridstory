@@ -26,6 +26,7 @@ The static demo has no API. Its export lists 2024 Bahrain qualifying and race, 2
 apps/
   api/        FastAPI service — loads FastF1 sessions and serves timing, telemetry, weather, race control
   web/        React + Vite + TypeScript dashboard (ECharts, Three.js)
+  replay3d/   Prototype: broadcast-style 3D replay of one real race moment (static three.js page)
 docs/
   VISION.md   Product vision
   ROADMAP.md  Phased development plan
@@ -68,6 +69,11 @@ Opens on http://localhost:5173 and talks to the API on port 8000.
 | `make web`  | Start the web app only                |
 | `make test` | Run API tests                         |
 | `make lint` | Ruff (API) + ESLint (web)             |
+| `make replay` | Serve the 3D replay prototype on port 5180 |
+
+### 3D replay prototype (`apps/replay3d`)
+
+A directed 3D replay of the 2024 Bahrain GP pit window (Hamilton vs Piastri, laps 33–35), driven entirely by the race data. It's a static page: `make replay`, or `python -m http.server 5180` inside `apps/replay3d`, then open http://localhost:5180. It ships with built-in car and circuit models; licensed models can be dropped in locally and are never committed. See [apps/replay3d/README.md](apps/replay3d/README.md).
 
 ## Data sources and credits
 

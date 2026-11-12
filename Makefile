@@ -1,4 +1,4 @@
-.PHONY: dev api web test lint
+.PHONY: dev api web test lint replay
 
 API_PY = .venv\Scripts\python
 
@@ -19,3 +19,6 @@ test:
 lint:
 	cd apps\api && $(API_PY) -m ruff check app tests scripts
 	cd apps\web && npm run lint
+
+replay:
+	cd apps\replay3d && ..\api\$(API_PY) -m http.server 5180

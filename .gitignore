@@ -52,3 +52,10 @@ docker-compose.override.yml
 
 # ===== Brainstorming companion (local mockups) =====
 .superpowers/
+
+# ===== Local agent/editor config =====
+.claude/
+
+# ===== 3D replay: licensed / third-party models stay local (see apps/replay3d/README.md) =====
+apps/replay3d/cars/
+apps/replay3d/venue/
